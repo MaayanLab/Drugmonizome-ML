@@ -95,6 +95,52 @@ def parse_multiple(fns, row_sep='\n', col_sep='\t'):
         df = df_attributes[0]
     return df
 
+def get_matches_df(drugmonizome_metadata, hits):
+    '''
+    Matches a list of drug screen hits to the appropriate Drugmonizome metadata.
+    Looks for a full match between the name of the hit and the Name or a
+    synonym of a drug.
+    
+    Param:
+     - drugmonizome_metadata: dataframe with Drugmonizome metadata
+     - hits: list/set of str names of drug screen hits
+    
+    Returns:
+     - dataframe containing metadata for drug screen hits
+    '''
+    # format the set of hits
+    hits = set(hit.strip().lower() for hit in hits if len(hit.strip()) > 0)
+    print('Number of hits queried: {}'.format(len(hits)))
+    
+    # make boolean array for drugs in Drugmonizome, where a match to a hit is True
+    in_name = np.array([drug.lower() in hits for drug in drugmonizome_metadata['Name']])
+    in_synonyms = np.array([any(drug.strip().lower() in hits for drug in synonyms)
+                            if isinstance(synonyms, list) else False
+                            for synonyms in drugmonizome_metadata['Synonyms']])
+    
+    print('Number of matches: {} / {}'.format(np.sum(np.logical_or(in_synonyms, in_name)), len(drugmonizome_metadata)))
+    
+    # find unmatched drugs
+    hits_name_copy = set(hits)
+    for drug in drugmonizome_metadata['Name']:
+        if drug.lower() in hits_name_copy:
+            hits_name_copy.remove(drug.lower())
+
+    hits_syn_copy = set(hits)
+    for synonyms in drugmonizome_metadata['Synonyms']:
+        if isinstance(synonyms, str): 
+            for drug in synonyms:
+                if drug.strip().lower() in hits_syn_copy:
+                    hits_syn_copy.remove(drug.strip().lower())
+
+    missing_hits = hits_name_copy.intersection(hits_syn_copy)
+    print('Missing in Drugmonizome ({}): {}'.format(len(missing_hits), missing_hits))
+    
+    # filter hits metadata
+    dfhits = drugmonizome_metadata.loc[np.logical_or(in_synonyms, in_name)]
+    print('Total shape: {}'.format(dfhits.shape))
+          
+    return dfhits
 
 # Enumerables and constants
 # -----------------------------------------------------------------------------
@@ -109,19 +155,6 @@ class Enum(set):
         raise AttributeError
 
 
-# The entity types supported by the Harmonizome API.
-class Entity(Enum):
-
-    DATASET = 'dataset'
-    GENE = 'gene'
-    GENE_SET = 'gene_set'
-    ATTRIBUTE = 'attribute'
-    GENE_FAMILY = 'gene_family'
-    NAMING_AUTHORITY = 'naming_authority'
-    PROTEIN = 'protein'
-    RESOURCE = 'resource'
-
-
 def json_from_url(url):
     """Returns API response after decoding and loading JSON.
     """
@@ -132,6 +165,7 @@ def json_from_url(url):
 
 VERSION = 'v1'
 API_URL = 'http://amp.pharm.mssm.edu/drugmonizome/data-api/api'
+METADATA_URL = 'https://amp.pharm.mssm.edu/drugmonizome/metadata-api/entities'
 
 # This config objects pulls the names of the datasets, their directories, and
 # the possible downloads from the API. This allows us to add new datasets and
@@ -147,6 +181,7 @@ class Drugmonizome(object):
 
     __version__ = VERSION
     DATASETS = DATASET_TO_LINK.keys()
+    drug_metadata = None
 
     @classmethod
     def get(cls, entity, name=None, start_at=None):
@@ -223,6 +258,34 @@ class Drugmonizome(object):
     @classmethod
     def get_datasets(cls):
         return cls.DATASETS
+    
+    @classmethod
+    def read_drug_metadata(cls):
+        """Reads all drug metadata into a dataframe
+        """
+        if cls.drug_metadata is None:
+            entities = json_from_url(METADATA_URL)
+            rows_list = []
+            for entity in entities:
+                rows_list.append(entity['meta'])
+            cls.drug_metadata = pd.DataFrame(rows_list)
+        return cls.drug_metadata
+
+    @classmethod
+    def get_InChI_keys(cls, hits):
+        """Given list of drug names, finds matching InChI keys in Drugmonizome
+        """
+        df_drugs = cls.read_drug_metadata()
+        df_hits = get_matches_df(df_drugs, hits)
+        return list(df_hits['InChI_key'])
+    
+    @classmethod
+    def get_drug_names(cls, inchi_keys):
+        """Given list of InChI keys, finds matching drug names in Drugmonizome
+        """
+        df_drugs = cls.read_drug_metadata()
+        df_drugs = df_drugs.set_index('InChI_key')
+        return list(df_drugs.loc[inchi_keys]['Name'])
 
 # Utility functions
 # -------------------------------------------------------------------------
