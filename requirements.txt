@@ -6,3 +6,4 @@ scipy
 sklearn
 matplotlib
 requests
+umap-learn
