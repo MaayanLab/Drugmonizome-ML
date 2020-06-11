@@ -7,3 +7,4 @@ sklearn
 matplotlib
 requests
 umap-learn
+seaborn
