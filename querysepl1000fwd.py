@@ -50,7 +50,7 @@ def get_drug_names(keys):
     l1000meta_df.index = l1000meta_df.index.map(lambda s: s.replace('InChIKey=', '') if isinstance(s, str) else s)
     l1000meta_df = l1000meta_df.iloc[np.logical_not(l1000meta_df.index.duplicated())]
 
-    return list(l1000meta_df['pert_iname'].loc[keys])
+    return list(l1000meta_df['pert_iname'].reindex(keys))
 
 
 ### TODO: convert probe id to gene name
