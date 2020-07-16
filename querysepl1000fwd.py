@@ -6,6 +6,7 @@ import json, requests
 import pandas as pd
 import numpy as np
 import os
+from tqdm import tqdm
 
 L1000FWD_URL = 'http://amp.pharm.mssm.edu/L1000FWD/'
 L1000FWD_METADATA = 'L1000FWD/Drugs_metadata.csv'
@@ -69,7 +70,7 @@ def map_names_to_inchi_keys(names, verbose=0):
     _download_metadata()
     l1000meta_df = pd.read_csv(L1000FWD_METADATA, index_col=0)
     name_to_inchis = {}
-    for query_string in names:
+    for query_string in tqdm(names):
         query_string = query_string.replace(' ', '-').upper()
         response = requests.get(L1000FWD_URL + 'synonyms/' + query_string)
         found_match = False
@@ -81,12 +82,11 @@ def map_names_to_inchi_keys(names, verbose=0):
 
                     if pert_id in l1000meta_df.index:
                         inchi = l1000meta_df['inchi_key'].loc[pert_id]
-                    if isinstance(inchi, str):
-                        if name not in name_to_inchis:
-                            name_to_inchis[name] = set()
-                        name_to_inchis[name].add(inchi.replace('InChIKey=', ''))
-
-                    found_match = True
+                        if isinstance(inchi, str):
+                            if name not in name_to_inchis:
+                                name_to_inchis[name] = set()
+                            name_to_inchis[name].add(inchi.replace('InChIKey=', ''))
+                            found_match = True
         if verbose and not found_match:
             print(query_string + ' not found')
 
