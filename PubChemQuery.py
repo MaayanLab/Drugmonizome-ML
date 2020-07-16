@@ -29,7 +29,8 @@ class PubChemQuery:
             r = requests.get(url)
             throttling = r.headers['X-Throttling-Control']
             if ('Request Count status: Green' not in throttling) or ('Request Time status: Green' not in throttling) or ('too many requests' in throttling):
-                time.sleep(5)
+                cls.backoff.double()
+                time.sleep(cls.backoff.value())
             if r.status_code != 503:
                 cls.backoff.halve()
                 break
