@@ -10,7 +10,7 @@ class PubChemQuery:
     Uses exponential backoff to limit server request rates when 503 error is encountered.
     """
     
-    backoff = ExponentialBackoff()
+    backoff = ExponentialBackoff(min_value=0.2)
 
     @classmethod
     def make_query(cls, url):
@@ -27,6 +27,9 @@ class PubChemQuery:
         while True:
             time.sleep(cls.backoff.value())
             r = requests.get(url)
+            throttling = r.headers['X-Throttling-Control']
+            if ('Request Count status: Green' not in throttling) or ('Request Time status: Green' not in throttling) or ('too many requests' in throttling):
+                time.sleep(5)
             if r.status_code != 503:
                 cls.backoff.halve()
                 break
