@@ -8,8 +8,10 @@ The target labels for prediction are provided as a list of drugs (e.g. the hits 
 
 Afterwards, the trained model is used to rank the positive compounds, and to predict additional compounds that could have similar properties to the known compounds.
 
-![Drugmonizome-ML Framework](static/SummaryGraphic.pdf)
+## Drugmonizome-ML Framework:
+![Drugmonizome-ML Framework](static/SummaryGraphic.png)
 
+## References:
 *Note:* The default list of drugs contains the combined hits from 6 *in vitro* [COVID-19 drug screens](https://amp.pharm.mssm.edu/covid19/):  
 [1] Ellinger, B., and Andrea Zaliani. "Identification of inhibitors of SARS-CoV-2 in-vitro cellular toxicity in human (Caco-2) cells using a large scale drug repurposing collection." Research Square 10 (2020).  
 [2] Heiser, Katie, et al. "Identification of potential treatments for COVID-19 through artificial intelligence-enabled phenomic analysis of human cells infected with SARS-CoV-2." bioRxiv (2020).  
