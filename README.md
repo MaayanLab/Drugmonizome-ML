@@ -1,6 +1,6 @@
 # Drugmonizome-ML
 
-This [appyter](https://appyters.maayanlab.cloud/) (available at [https://appyters.maayanlab.cloud/#/Drugmonizome_ML](https://appyters.maayanlab.cloud/#/Drugmonizome_ML)) creates a custom machine learning pipeline on top of the [Drugmonizome](https://amp.pharm.mssm.edu/drugmonizome/) drug set libraries and [SEP-L1000](https://maayanlab.net/SEP-L1000/) phenotypic datasets in order to predict novel indications or attributes for existing drugs and understudied small molecules.
+This [appyter](https://appyters.maayanlab.cloud/) (available at [https://appyters.maayanlab.cloud/#/Drugmonizome_ML](https://appyters.maayanlab.cloud/#/Drugmonizome_ML)) creates a custom machine learning pipeline on top of the [Drugmonizome](https://maayanlab.cloud/drugmonizome/) drug set libraries and [SEP-L1000](https://maayanlab.net/SEP-L1000/) phenotypic datasets in order to predict novel indications or attributes for existing drugs and understudied small molecules.
 
 Phenotypic datasets measure gene expression (L1000) or cell morphology (by staining and imaging) after perturbation with each of thousands of compounds. The drug set libraries associate thousands of drugs with known attributes such as associated genes, indications, side effects, and chemical features. Both phenotypic datasets and small molecule attributes can be used as inputs to the classifier.
 
